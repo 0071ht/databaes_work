@@ -1,0 +1,144 @@
+題目：診所掛號與病歷管理系統 (Clinic Appointment & Medical Record System)
+1. 應用情境與使用案例
+應用情境：
+一家中型聯合診所需要數位化轉型，希望建立一套系統來管理病患的掛號預約、醫師的看診排程，以及電子病歷與處方籤。系統需要能追蹤病患的看診歷程，並確保醫療紀錄的正確性與隱私。
+
+使用案例 (Use Cases)：
+
+病患 (Patient)：
+
+透過系統預約掛號或取消預約。
+
+查詢個人過去的看診紀錄與開藥明細。
+
+醫師 (Doctor)：
+
+檢視每日的預約掛號名單。
+
+於看診後填寫病歷（症狀、診斷結果）。
+
+開立處方籤（選擇藥品與劑量）。
+
+診所櫃檯/管理員 (Clinic Staff)：
+
+協助現場病患建立初診資料與掛號。
+
+更新掛號狀態（如：已報到、看診中、已結帳）。
+
+管理醫師的基本資料與門診科別。
+
+2. 系統需求說明
+系統需要儲存並管理以下實體 (Entities)：
+
+病患 (Patient)： 記錄病患編號、身分證字號（用於健保核對）、姓名、出生年月日、聯絡電話。
+
+醫師 (Doctor)： 記錄醫師編號、醫師執照號碼、姓名、專長科別（如：家醫科、小兒科）。
+
+掛號預約 (Appointment)： 記錄預約編號、預約日期、看診時段（早、午、晚）、當前狀態（已預約、已看診、已取消），以及是哪位病患預約哪位醫師。
+
+病歷 (Medical Record)： 記錄病歷編號、病患主訴症狀、醫師診斷結果、醫囑。每次看診（預約）會產生一份對應的病歷。
+
+藥品 (Medication)： 記錄藥品代碼、藥品名稱、健保單價。
+
+處方籤明細 (Prescription)： 記錄某份病歷開立了哪些藥品，以及每次服用的劑量和總數量。
+
+3. 完整性限制 (Integrity Constraints)
+醫療系統對資料正確性要求極高，須具備以下限制：
+
+實體完整性 (Entity Integrity)：
+
+所有實體的主鍵 (如 PatientID, DoctorID, AppointmentID) 皆不可為空值 (NULL) 且必須唯一。
+
+Patient 表中的身分證字號 (NationalID) 必須是唯一值 (UNIQUE)。
+
+參照完整性 (Referential Integrity)：
+
+Appointment (掛號預約) 必須關聯到已存在的病患與醫師。若病患被刪除（實務上通常是註記為停用而非真刪除），與之關聯的預約和病歷不能被刪除 (Restrict)，以保留醫療存查紀錄。
+
+Medical_Record (病歷) 必須關聯到一筆已完成看診的 Appointment。
+
+領域/使用者定義完整性 (Domain/User-defined Integrity)：
+
+時間與狀態限制： 預約狀態 (Status) 只能是特定的值（如：'Scheduled', 'Completed', 'Cancelled'）。
+
+資料格式： 病患的出生年月日 (DOB) 不可大於當前日期（不能是未來的人）。
+
+處方限制： 處方籤中的藥品總數量 (Quantity) 必須大於 0。
+
+4. ER Diagram 及詳細說明
+以下是診所系統的實體關聯邏輯：
+
+實體與關聯說明
+病患 (Patient) 與 掛號預約 (Appointment) 【1 對 多】：
+一位病患可以多次掛號 (1:N)，但一次掛號只屬於一位病患。
+
+醫師 (Doctor) 與 掛號預約 (Appointment) 【1 對 多】：
+一位醫師會接受多筆預約掛號 (1:N)，一筆預約只會指定一位醫師看診。
+
+掛號預約 (Appointment) 與 病歷 (Medical Record) 【1 對 1】：
+一次看診掛號最多只會產生一份病歷紀錄 (1:1)。
+
+病歷 (Medical Record) 與 藥品 (Medication) 【多 對 多】：
+一份病歷可以開立多種藥品，一種藥品也可以被開在多份病歷中 (M:N)。因此產生 PRESCRIPTION (處方籤明細) 這個關聯表來記錄劑量。
+
+文字版結構圖 (Schema)
+PATIENT (<u>PatientID</u>, NationalID, Name, DOB, Phone)
+
+DOCTOR (<u>DoctorID</u>, LicenseNo, Name, Specialty)
+
+APPOINTMENT (<u>AppointmentID</u>, ApptDate, TimeSlot, Status, PatientID, DoctorID)
+
+MEDICAL_RECORD (<u>RecordID</u>, Symptoms, Diagnosis, AppointmentID)
+
+MEDICATION (<u>MedCode</u>, MedName, UnitPrice)
+
+PRESCRIPTION (<u>RecordID, MedCode</u>, Dosage, Quantity)
+(註：底線代表 Primary Key，斜體代表 Foreign Key)
+
+ER Diagram (Mermaid 視覺化)
+程式碼片段
+erDiagram
+    PATIENT {
+        int PatientID PK
+        string NationalID
+        string Name
+        date DOB
+        string Phone
+    }
+    DOCTOR {
+        int DoctorID PK
+        string LicenseNo
+        string Name
+        string Specialty
+    }
+    APPOINTMENT {
+        int AppointmentID PK
+        date ApptDate
+        string TimeSlot
+        string Status
+        int PatientID FK
+        int DoctorID FK
+    }
+    MEDICAL_RECORD {
+        int RecordID PK
+        string Symptoms
+        string Diagnosis
+        int AppointmentID FK
+    }
+    MEDICATION {
+        string MedCode PK
+        string MedName
+        decimal UnitPrice
+    }
+    PRESCRIPTION {
+        int RecordID PK, FK
+        string MedCode PK, FK
+        string Dosage
+        int Quantity
+    }
+
+    PATIENT ||--o{ APPOINTMENT : "Books (預約)"
+    DOCTOR ||--o{ APPOINTMENT : "Consults (看診)"
+    APPOINTMENT ||--o| MEDICAL_RECORD : "Results in (產生)"
+    MEDICAL_RECORD ||--o{ PRESCRIPTION : "Includes (包含)"
+    MEDICATION ||--o{ PRESCRIPTION : "Prescribed as (開立為)"
