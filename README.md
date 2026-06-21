@@ -6,4 +6,5 @@
 #### 資料庫系統簡報連結：https://docs.google.com/presentation/d/1TpAppnQo3CxFYLDd0cRjiI03Jx9wjh4-DZ9jYCOQeC0/edit?usp=sharing
 #### 資料庫系統書面報告連結：https://1drv.ms/w/c/fa7e92bb9288b32d/IQCH-laasHWUSbvAH168zXssAeqNWQntAGCTMCq41lAtY3M?e=sOW8MJ
 #### ER Diagram:https://online.visual-paradigm.com/share.jsp?id=343430363433362d33
+#### 實作影片連接: https://youtu.be/k8pxmm_tdvk
 #### 備忘錄：
